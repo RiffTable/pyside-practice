@@ -49,7 +49,6 @@ class TrackerWidget(QWidget):
 		accdrag = 0.1
 		flyMax = 0.050
 		driftMax = 0.007
-		pograte = 5
 
 		# Timer Countdown
 		self.timer -= dt
@@ -79,8 +78,11 @@ class TrackerWidget(QWidget):
 		self.x += self.vx
 		self.y += self.vy
 
-		### Update Progress
+		
+		### Updating Progress
+		pograte = 5 if (self.state == st.FLYING) else 1
 		dist = self.getDist()
+
 		if dist < inRadius: 
 			self.progress += 1.5*pograte*dt
 		elif dist < outRadius: 

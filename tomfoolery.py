@@ -63,7 +63,7 @@ class MainWindow(QWidget):
 		# self.stats.addEntry("oy", lambda: str(self.tracker.offset_y))
 		# self.stats.addEntry("dx", lambda: str(self.tracker.x - self.tracker.offset_x))
 		# self.stats.addEntry("dy", lambda: str(self.tracker.y - self.tracker.offset_y))
-		self.stats.addEntry("dist", lambda: str(self.tracker.getDist()))
+		self.stats.addEntry("dist", lambda: str(int(self.tracker.getDist()*100)))
 
 		# Progress Bar
 		self.progbar = QProgressBar()
