@@ -32,7 +32,7 @@ class TrackerWidget(QWidget):
 		self.changestate(st.DRIFTING)
 	
 	def changestate(self, newstate: int) -> None:
-		print(f"New State: {"DRIFTING" if newstate == 1 else "FLYING"}")
+		print(f"New State: {"DRIFTING" if newstate == st.DRIFTING else "FLYING"}")
 		if self.state == newstate:
 			return
 		
