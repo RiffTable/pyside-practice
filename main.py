@@ -7,7 +7,7 @@ app = QGuiApplication(sys.argv)
 engine = QQmlApplicationEngine()
 engine.load("cain.qml")
 
-# Halt interpreter if QML syntax has errors
+# Halt interpreter if QML syntax has errors :(
 if not engine.rootObjects():
     sys.exit(-1)
 
