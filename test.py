@@ -23,7 +23,7 @@ class WireItem(QGraphicsPathItem):
     self.start_gate = start_gate
     self.end_gate = end_gate
     self.manager = manager
-    self.setFlags(QGraphicsItem.ItemIsSelectable)
+    self.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
     self.setZValue(-1)
     self.update_path()
 
@@ -54,19 +54,19 @@ class GateItem(QGraphicsRectItem):
 
     self.setBrush(QBrush(QColor("#3498db")))
     self.setPen(QPen(Qt.GlobalColor.black, 2))
-    self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemSendsGeometryChanges)
+    self.setFlags(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable | QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges)
 
     self.out_port = PortItem(self, True)
     self.in_port = PortItem(self, False)
 
     self.label = QGraphicsTextItem(self.type, self)
-    self.label.setFont(QFont("Arial", 10, QFont.Bold))
+    self.label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
     self.label.setDefaultTextColor(Qt.GlobalColor.white)
     self.label.setPos(15, 12)
     self.label.setCursor(Qt.CursorShape.SizeAllCursor)
 
   def itemChange(self, change, value):
-    if change == QGraphicsItem.ItemPositionHasChanged:
+    if change == QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
       self.manager.update_wires()
     return super().itemChange(change, value)
 
@@ -74,9 +74,9 @@ class GateItem(QGraphicsRectItem):
     item_at_click = self.scene().itemAt(event.scenePos(), self.manager.view.transform())
     
     if item_at_click == self.label:
-      self.setFlag(QGraphicsItem.ItemIsMovable, True)
+      self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
     else:
-      self.setFlag(QGraphicsItem.ItemIsMovable, False)
+      self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
       if event.button() == Qt.MouseButton.LeftButton:
         self.manager.start_wiring(self)
       elif event.button() == Qt.MouseButton.RightButton and self.type == "IN":
@@ -102,7 +102,7 @@ class LogicSimApp(QMainWindow):
     self.scene = QGraphicsScene()
     self.view = QGraphicsView(self.scene)
     self.view.setRenderHints(
-      QPainter.Antialiasing | QPainter.TextAntialiasing
+      QPainter.renderHints.Antialiasing | QPainter.renderHints.TextAntialiasing
     )
 
     # Enable tracking
@@ -122,7 +122,7 @@ class LogicSimApp(QMainWindow):
 
   def eventFilter(self, source, event):
     # FIXED: Use QEvent.MouseMove instead of event.MouseMove
-    if event.type() == QEvent.MouseMove and self.wire_start_gate:
+    if event.type() == QEvent.Type.MouseMove and self.wire_start_gate:
       self.update_ghost_wire(event.position().toPoint())
     return super().eventFilter(source, event)
 
