@@ -2,12 +2,16 @@
 
 import sys
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QGraphicsView, QGraphicsScene, 
-    QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPathItem, 
-    QVBoxLayout, QWidget, QPushButton, QGraphicsItem, QGraphicsTextItem
+  QApplication, QGraphicsSceneMouseEvent, QMainWindow, QGraphicsView, QGraphicsScene, 
+  QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPathItem, 
+  QVBoxLayout, QWidget, QPushButton, QGraphicsItem, QGraphicsTextItem
 )
-from PySide6.QtCore import Qt, QPointF, QLineF, QRectF, QEvent
-from PySide6.QtGui import QPen, QPainterPath, QColor, QBrush, QFont, QPainter
+from PySide6.QtCore import (
+  QCoreApplication, Qt, QPointF, QLineF, QRectF, QEvent
+)
+from PySide6.QtGui import (
+  QPen, QPainterPath, QColor, QBrush, QFont, QPainter, QPalette
+)
 
 class PortItem(QGraphicsEllipseItem):
   def __init__(self, parent, is_output=True):
@@ -38,16 +42,16 @@ class WireItem(QGraphicsPathItem):
     if self.isSelected(): color = QColor("#f39c12")
     self.setPen(QPen(color, 3 if not self.isSelected() else 5))
 
-  def mousePressEvent(self, event):
+  def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
     if event.button() == Qt.MouseButton.RightButton:
       self.manager.remove_wire(self)
     super().mousePressEvent(event)
 
 class GateItem(QGraphicsRectItem):
-  def __init__(self, x, y, gate_type, manager):
+  def __init__(self, x, y, gate_type: str, manager):
     super().__init__(0, 0, 80, 50)
     self.setPos(x, y)
-    self.type = gate_type
+    self.gate_type = gate_type
     self.manager = manager
     self.state = 0
     self.inputs = []
@@ -59,7 +63,7 @@ class GateItem(QGraphicsRectItem):
     self.out_port = PortItem(self, True)
     self.in_port = PortItem(self, False)
 
-    self.label = QGraphicsTextItem(self.type, self)
+    self.label = QGraphicsTextItem(self.gate_type, self)
     self.label.setFont(QFont("Arial", 10, QFont.Weight.Bold))
     self.label.setDefaultTextColor(Qt.GlobalColor.white)
     self.label.setPos(15, 12)
@@ -70,7 +74,7 @@ class GateItem(QGraphicsRectItem):
       self.manager.update_wires()
     return super().itemChange(change, value)
 
-  def mousePressEvent(self, event):
+  def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
     item_at_click = self.scene().itemAt(event.scenePos(), self.manager.view.transform())
     
     if item_at_click == self.label:
@@ -79,7 +83,7 @@ class GateItem(QGraphicsRectItem):
       self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, False)
       if event.button() == Qt.MouseButton.LeftButton:
         self.manager.start_wiring(self)
-      elif event.button() == Qt.MouseButton.RightButton and self.type == "IN":
+      elif event.button() == Qt.MouseButton.RightButton and self.gate_type == "IN":
         self.state = 1 if self.state == 0 else 0
         self.update_appearance()
         self.manager.run_logic()
@@ -88,12 +92,14 @@ class GateItem(QGraphicsRectItem):
 
   def update_appearance(self):
     color = "#2ecc71" if self.state == 1 else "#3498db"
-    if self.type == "BULB": color = "#f1c40f" if self.state == 1 else "#e74c3c"
+    if self.gate_type == "BULB": color = "#f1c40f" if self.state == 1 else "#e74c3c"
     self.setBrush(QBrush(QColor(color)))
+
 
 class LogicSimApp(QMainWindow):
   def __init__(self):
     super().__init__()
+
     self.setWindowTitle("LogiSim")
 
     central = QWidget()
@@ -102,7 +108,7 @@ class LogicSimApp(QMainWindow):
     self.scene = QGraphicsScene()
     self.view = QGraphicsView(self.scene)
     self.view.setRenderHints(
-      QPainter.renderHints.Antialiasing | QPainter.renderHints.TextAntialiasing
+      QPainter.RenderHint.Antialiasing | QPainter.RenderHint.TextAntialiasing
     )
 
     # Enable tracking
@@ -117,7 +123,7 @@ class LogicSimApp(QMainWindow):
     self.wires = []
     self.wire_start_gate = None
 
-    self.setup_ui()
+    self.setupSidebar()
     self.view.viewport().installEventFilter(self)
 
   def eventFilter(self, source, event):
@@ -126,7 +132,7 @@ class LogicSimApp(QMainWindow):
       self.update_ghost_wire(event.position().toPoint())
     return super().eventFilter(source, event)
 
-  def setup_ui(self):
+  def setupSidebar(self):
     btns = QWidget(self)
     btns.setGeometry(10, 10, 120, 250)
     vbox = QVBoxLayout(btns)
@@ -134,7 +140,7 @@ class LogicSimApp(QMainWindow):
       b = QPushButton(t); b.clicked.connect(lambda chk=False, g=t: self.add_gate(g))
       vbox.addWidget(b)
 
-  def add_gate(self, g_type):
+  def add_gate(self, g_type: str):
     gate = GateItem(150, 150, g_type, self)
     self.scene.addItem(gate)
     self.gates.append(gate)
@@ -190,17 +196,34 @@ class LogicSimApp(QMainWindow):
   def run_logic(self):
     for _ in range(5):
       for g in self.gates:
-        if g.type == "IN": continue
+        if g.gate_type == "IN": continue
         v = [inp.state for inp in g.inputs]
-        if g.type == "AND": g.state = 1 if v and all(v) else 0
-        elif g.type == "OR": g.state = 1 if any(v) else 0
-        elif g.type == "NOT": g.state = 1 if v and v[0] == 0 else 0
-        elif g.type == "BULB": g.state = 1 if any(v) else 0
+        if g.gate_type == "AND": g.state = 1 if v and all(v) else 0
+        elif g.gate_type == "OR": g.state = 1 if any(v) else 0
+        elif g.gate_type == "NOT": g.state = 1 if v and v[0] == 0 else 0
+        elif g.gate_type == "BULB": g.state = 1 if any(v) else 0
         g.update_appearance()
     self.update_wires()
 
 if __name__ == "__main__":
   app = QApplication(sys.argv)
+  app.setStyle("Fusion")
+
+  dark_palette = QPalette()
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Window, QColor("#2b2b2b"))
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.WindowText, Qt.GlobalColor.white)
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Base, QColor("#1e1e1e"))
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.AlternateBase, QColor("#2b2b2b"))
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.ToolTipText, Qt.GlobalColor.red)
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Text, Qt.GlobalColor.white)
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Button, QColor("#3c3f41"))
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.ButtonText, Qt.GlobalColor.white)
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Highlight, QColor("#2f65ca"))
+  dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
+
+  app.setPalette(dark_palette)
+
   window = LogicSimApp()
   window.resize(1000, 600)
   window.show()
