@@ -1,7 +1,6 @@
 # Drag Text to Move | Drag Body to Wire
 
 from __future__ import annotations
-from dataclasses import dataclass
 import sys
 from PySide6.QtWidgets import (
 	QApplication, QGraphicsSceneMouseEvent, QMainWindow, QGraphicsView, QGraphicsScene, 
@@ -14,17 +13,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import (
 	QPen, QPainterPath, QColor, QBrush, QFont, QPainter, QPalette, QKeyEvent, QMouseEvent
 )
-
-@dataclass(frozen=True)
-class ColorPalette:
-	bg             = QColor("#1e1e1e")
-	alt_bg         = QColor("#2b2b2b")
-	text           = QColor("#ffffff")
-	hl_text_bg     = QColor("#2f65ca")
-	button         = QColor("#3c3f41")
-	tooltip_bg     = QColor("#ffffff")
-	tooltip_text   = QColor("#ff0000")
-color = ColorPalette()
+import Color
 
 class PortItem(QGraphicsEllipseItem):
 	def __init__(self, parent: GateItem, is_output=True):
@@ -224,17 +213,17 @@ if __name__ == "__main__":
 	Role = QPalette.ColorRole
 
 	palette_colors = {
-		Role.Window         : color.alt_bg,
-		Role.WindowText     : color.text,
-		Role.Base           : color.bg,
-		Role.AlternateBase  : color.alt_bg,
-		Role.ToolTipBase    : color.tooltip_bg,
-		Role.ToolTipText    : color.tooltip_text,
-		Role.Text           : color.text,
-		Role.Button         : color.button,
-		Role.ButtonText     : color.text,
-		Role.Highlight      : color.hl_text_bg,
-		Role.HighlightedText: color.text,
+		Role.Window         : Color.alt_bg,
+		Role.WindowText     : Color.text,
+		Role.Base           : Color.bg,
+		Role.AlternateBase  : Color.alt_bg,
+		Role.ToolTipBase    : Color.tooltip_bg,
+		Role.ToolTipText    : Color.tooltip_text,
+		Role.Text           : Color.text,
+		Role.Button         : Color.button,
+		Role.ButtonText     : Color.text,
+		Role.Highlight      : Color.hl_text_bg,
+		Role.HighlightedText: Color.text,
 	}
 	for role, color in palette_colors.items():
 		dark_palette.setColor(QPalette.ColorGroup.All, role, color)
