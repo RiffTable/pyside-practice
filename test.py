@@ -1,17 +1,18 @@
 # Drag Text to Move | Drag Body to Wire
 
-import sys
 from __future__ import annotations
+from dataclasses import dataclass
+import sys
 from PySide6.QtWidgets import (
 	QApplication, QGraphicsSceneMouseEvent, QMainWindow, QGraphicsView, QGraphicsScene, 
 	QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPathItem, 
 	QVBoxLayout, QWidget, QPushButton, QGraphicsItem, QGraphicsTextItem
 )
 from PySide6.QtCore import (
-	QCoreApplication, Qt, QPointF, QLineF, QRectF, QEvent
+	Qt, QPointF, QLineF, QRectF, QEvent, QObject
 )
 from PySide6.QtGui import (
-	QPen, QPainterPath, QColor, QBrush, QFont, QPainter, QPalette
+	QPen, QPainterPath, QColor, QBrush, QFont, QPainter, QPalette, QKeyEvent, QMouseEvent
 )
 
 class PortItem(QGraphicsEllipseItem):
@@ -23,7 +24,7 @@ class PortItem(QGraphicsEllipseItem):
 		self.setPos(80 if is_output else 0, 25)
 
 class WireItem(QGraphicsPathItem):
-	def __init__(self, start_gate, end_gate, manager):
+	def __init__(self, start_gate: GateItem, end_gate: GateItem, manager: LogicSimApp):
 		super().__init__()
 		self.start_gate = start_gate
 		self.end_gate = end_gate
@@ -49,7 +50,7 @@ class WireItem(QGraphicsPathItem):
 		super().mousePressEvent(event)
 
 class GateItem(QGraphicsRectItem):
-	def __init__(self, x, y, gate_type: str, manager):
+	def __init__(self, x: float, y: float, gate_type: str, manager: LogicSimApp):
 		super().__init__(0, 0, 80, 50)
 		self.setPos(x, y)
 		self.gate_type = gate_type
@@ -70,7 +71,7 @@ class GateItem(QGraphicsRectItem):
 		self.label.setPos(15, 12)
 		self.label.setCursor(Qt.CursorShape.SizeAllCursor)
 
-	def itemChange(self, change, value):
+	def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
 		if change == QGraphicsItem.GraphicsItemChange.ItemPositionHasChanged:
 			self.manager.update_wires()
 		return super().itemChange(change, value)
@@ -124,16 +125,7 @@ class LogicSimApp(QMainWindow):
 		self.wires = []
 		self.wire_start_gate = None
 
-		self.setupSidebar()
-		self.view.viewport().installEventFilter(self)
-
-	def eventFilter(self, source, event):
-		# FIXED: Use QEvent.MouseMove instead of event.MouseMove
-		if event.type() == QEvent.Type.MouseMove and self.wire_start_gate:
-			self.update_ghost_wire(event.position().toPoint())
-		return super().eventFilter(source, event)
-
-	def setupSidebar(self):
+		###======= SIDEBAR DRAG-N-DROP MENU =======###
 		btns = QWidget(self)
 		btns.setGeometry(10, 10, 120, 250)
 		vbox = QVBoxLayout(btns)
@@ -141,27 +133,34 @@ class LogicSimApp(QMainWindow):
 			b = QPushButton(t); b.clicked.connect(lambda chk=False, g=t: self.add_gate(g))
 			vbox.addWidget(b)
 
-	def add_gate(self, g_type: str):
-		gate = GateItem(150, 150, g_type, self)
+		self.view.viewport().installEventFilter(self)
+
+	def eventFilter(self, source: QObject, event: QEvent):
+		if event.type() == QEvent.Type.MouseMove and self.wire_start_gate:
+			self.update_ghost_wire(event.position().toPoint())
+		return super().eventFilter(source, event)
+
+	def add_gate(self, gate_type: str):
+		gate = GateItem(150, 150, gate_type, self)
 		self.scene.addItem(gate)
 		self.gates.append(gate)
 
-	def start_wiring(self, gate):
+	def start_wiring(self, gate: GateItem):
 		self.wire_start_gate = gate
 		p1 = self.wire_start_gate.scenePos() + QPointF(80, 25)
 		self.ghost_line.setLine(QLineF(p1, p1))
 		self.ghost_line.show()
 
-	def update_ghost_wire(self, qt_mouse_pos):
+	def update_ghost_wire(self, qt_mouse_pos: QPointF):
 		if self.wire_start_gate:
 			p1 = self.wire_start_gate.scenePos() + QPointF(80, 25)
 			p2 = self.view.mapToScene(qt_mouse_pos)
 			self.ghost_line.setLine(QLineF(p1, p2))
 
-	def mouseReleaseEvent(self, event):
+	def mouseReleaseEvent(self, event: QMouseEvent):
 		if self.wire_start_gate:
 			self.ghost_line.hide()
-			pos = self.view.mapToScene(event.pos())
+			pos = self.view.mapToScene(event.position().toPoint())
 			items = self.scene.items(QRectF(pos.x()-15, pos.y()-15, 30, 30))
 			for item in items:
 				target = item.parentItem() if isinstance(item, (PortItem, QGraphicsTextItem)) else item
@@ -173,7 +172,7 @@ class LogicSimApp(QMainWindow):
 			self.wire_start_gate = None
 		super().mouseReleaseEvent(event)
 
-	def keyPressEvent(self, event):
+	def keyPressEvent(self, event: QKeyEvent):
 		if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
 			for item in self.scene.selectedItems():
 				if isinstance(item, WireItem): self.remove_wire(item)
@@ -185,7 +184,7 @@ class LogicSimApp(QMainWindow):
 			self.run_logic()
 		super().keyPressEvent(event)
 
-	def remove_wire(self, wire):
+	def remove_wire(self, wire: WireItem):
 		if wire in self.wires:
 			wire.end_gate.inputs.remove(wire.start_gate)
 			self.wires.remove(wire); self.scene.removeItem(wire)
