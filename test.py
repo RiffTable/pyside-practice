@@ -15,8 +15,19 @@ from PySide6.QtGui import (
 	QPen, QPainterPath, QColor, QBrush, QFont, QPainter, QPalette, QKeyEvent, QMouseEvent
 )
 
+@dataclass(frozen=True)
+class ColorPalette:
+	bg             = QColor("#1e1e1e")
+	alt_bg         = QColor("#2b2b2b")
+	text           = QColor("#ffffff")
+	hl_text_bg     = QColor("#2f65ca")
+	button         = QColor("#3c3f41")
+	tooltip_bg     = QColor("#ffffff")
+	tooltip_text   = QColor("#ff0000")
+color = ColorPalette()
+
 class PortItem(QGraphicsEllipseItem):
-	def __init__(self, parent: QGraphicsItem, is_output=True):
+	def __init__(self, parent: GateItem, is_output=True):
 		super().__init__(-5, -5, 10, 10, parent)
 		self.is_output = is_output
 		self.setBrush(QBrush(QColor("#34495e") if not is_output else "#3498db"))
@@ -210,18 +221,23 @@ if __name__ == "__main__":
 	app.setStyle("Fusion")
 
 	dark_palette = QPalette()
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Window, QColor("#2b2b2b"))
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.WindowText, Qt.GlobalColor.white)
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Base, QColor("#1e1e1e"))
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.AlternateBase, QColor("#2b2b2b"))
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.ToolTipText, Qt.GlobalColor.red)
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Text, Qt.GlobalColor.white)
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Button, QColor("#3c3f41"))
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.ButtonText, Qt.GlobalColor.white)
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.Highlight, QColor("#2f65ca"))
-	dark_palette.setColor(QPalette.ColorGroup.All, QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
+	Role = QPalette.ColorRole
 
+	palette_colors = {
+		Role.Window         : color.alt_bg,
+		Role.WindowText     : color.text,
+		Role.Base           : color.bg,
+		Role.AlternateBase  : color.alt_bg,
+		Role.ToolTipBase    : color.tooltip_bg,
+		Role.ToolTipText    : color.tooltip_text,
+		Role.Text           : color.text,
+		Role.Button         : color.button,
+		Role.ButtonText     : color.text,
+		Role.Highlight      : color.hl_text_bg,
+		Role.HighlightedText: color.text,
+	}
+	for role, color in palette_colors.items():
+		dark_palette.setColor(QPalette.ColorGroup.All, role, color)
 	app.setPalette(dark_palette)
 
 	window = LogicSimApp()
