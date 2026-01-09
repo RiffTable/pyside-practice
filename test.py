@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import sys
+from functools import partial
 from PySide6.QtWidgets import (
 	QApplication, QGraphicsSceneMouseEvent, QMainWindow, QGraphicsView, QGraphicsScene, 
 	QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsPathItem, 
@@ -98,6 +99,24 @@ class GateItem(QGraphicsRectItem):
 		self.setBrush(QBrush(QColor(color)))
 
 
+
+
+
+class CircuitScene(QGraphicsScene):
+	def __init__(self):
+		super().__init__()
+
+class CircuitView(QGraphicsView):
+	def __init__(self, scene: CircuitScene):
+		super().__init__(scene)
+		
+		self.setRenderHints(
+			QPainter.RenderHint.Antialiasing | QPainter.RenderHint.TextAntialiasing
+		)
+		self.viewport().setMouseTracking(True)
+
+		# At the End
+
 class LogicSimApp(QMainWindow):
 	def __init__(self):
 		super().__init__()
@@ -107,14 +126,9 @@ class LogicSimApp(QMainWindow):
 		central = QWidget()
 		self.setCentralWidget(central)
 		layout = QVBoxLayout(central)
-		self.scene = QGraphicsScene()
-		self.view = QGraphicsView(self.scene)
-		self.view.setRenderHints(
-			QPainter.RenderHint.Antialiasing | QPainter.RenderHint.TextAntialiasing
-		)
 
-		# Enable tracking
-		self.view.viewport().setMouseTracking(True)
+		self.scene = CircuitScene()
+		self.view = CircuitView(self.scene)
 		layout.addWidget(self.view)
 
 		self.ghost_line = self.scene.addLine(0,0,0,0, QPen(Qt.GlobalColor.black, 2, Qt.PenStyle.DashLine))
@@ -129,9 +143,10 @@ class LogicSimApp(QMainWindow):
 		btns = QWidget(self)
 		btns.setGeometry(10, 10, 120, 250)
 		vbox = QVBoxLayout(btns)
-		for t in ["AND", "OR", "NOT", "IN", "BULB"]:
-			b = QPushButton(t); b.clicked.connect(lambda chk=False, g=t: self.add_gate(g))
-			vbox.addWidget(b)
+		for text in ["AND", "OR", "NOT", "IN", "BULB"]:
+			btn = QPushButton(text)
+			btn.clicked.connect(partial(self.add_gate, text))
+			vbox.addWidget(btn)
 
 		self.view.viewport().installEventFilter(self)
 
