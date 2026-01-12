@@ -18,6 +18,7 @@ from PySide6.QtGui import (
 )
 from UICore import Color
 from CircuitView import (CircuitScene, CircuitView)
+from UIGates import CompItem
 
 
 
@@ -85,5 +86,7 @@ if __name__ == "__main__":
 	window = AppWindow()
 	window.resize(1000, 600)
 	window.show()
+
+	window.view.scene.addComp(100, 100, CompItem)
 
 	sys.exit(app.exec())

@@ -1,6 +1,4 @@
-from PySide6.QtGui import QColor
-
-GRID_CELL_SIZE = 10
+from PySide6.QtGui import QColor, QFont
 
 class Color:
 	primary_bg     = QColor("#1e1e1e")
@@ -14,3 +12,7 @@ class Color:
 	gate_on        = QColor("#2ecc71")
 	LED_on         = QColor("#f1c40f")
 	LED_off        = QColor("#e74c3c")
+	outline        = QColor("#000000")
+
+class Font:
+	default        = QFont("Arial", 12, QFont.Weight.Bold)

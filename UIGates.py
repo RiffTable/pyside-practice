@@ -15,7 +15,7 @@ from PySide6.QtGui import (
 	QPalette, QColor, QFont, QPainter, QPen, QBrush, QPainterPath,
 	QMouseEvent, QKeyEvent,
 )
-from UICore import Color
+from UICore import *
 
 
 
@@ -23,15 +23,38 @@ from UICore import Color
 
 
 class CompItem(QGraphicsRectItem):
-	def __init__(self, x: float, y: float, scene: QGraphicsScene):
+	def __init__(self, x: float, y: float):
 		super().__init__(x, y, 80, 50)
-
+		
+		self.state = False
 		self.setFlags(
+			QGraphicsItem.GraphicsItemFlag.ItemIsMovable |
 			QGraphicsItem.GraphicsItemFlag.ItemIsSelectable |
 			QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
 		)
+		self.redraw()
+		self.setPen(QPen(Color.outline, 2))
+		self.label = QGraphicsTextItem("=1", self)
+		self.label.setFont(Font.default)
+		# self.label.setDefaultTextColor(Color.text)
+		self.label.setPos(x+5, y+5)
+
+
+	def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
+		if change == QGraphicsItem.ItemPositionChange:
+			return QPointF(*self.scene().snapToGrid(
+				value.x(),
+				value.y()
+			))
+
+		return super().itemChange(change, value)
+	
+	def redraw(self):
+		if self.state: self.setBrush(Color.gate_on)
+		else         : self.setBrush(Color.gate_off)
+
+
 
 class WireItem(QGraphicsPathItem):
-	def __init__(self, beg: CompItem, end: CompItem, scene: QGraphicsScene):
+	def __init__(self, beg: CompItem, end: CompItem):
 		super().__init__()
-	pass
