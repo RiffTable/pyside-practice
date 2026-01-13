@@ -1,3 +1,4 @@
+from typing import cast
 from PySide6.QtWidgets import (
 	QApplication, QMainWindow, QWidget,
 	QPushButton, 
@@ -53,6 +54,7 @@ class CircuitScene(QGraphicsScene):
 
 
 class CircuitView(QGraphicsView):
+	scene: CircuitScene
 	def __init__(self):
 		self.scene = CircuitScene()
 		super().__init__(self.scene)
@@ -85,14 +87,14 @@ class CircuitView(QGraphicsView):
 
 	###======= MOUTH CONTROLS =======###
 	def mousePressEvent(self, event: QMouseEvent):
-		if event.button() == Qt.RightButton:
+		if event.button() == Qt.MouseButton.RightButton:
 			self.lastMousePos = event.position()
 		
 		super().mousePressEvent(event)
 	
 	def mouseMoveEvent(self, event: QMouseEvent):
 		mousepos = event.position()
-		if event.buttons() & Qt.RightButton:
+		if event.buttons() & Qt.MouseButton.RightButton:
 			delta = mousepos - self.lastMousePos
 			
 			self.translate(

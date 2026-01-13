@@ -15,6 +15,7 @@ from PySide6.QtGui import (
 	QPalette, QColor, QFont, QPainter, QPen, QBrush, QPainterPath,
 	QMouseEvent, QKeyEvent,
 )
+from CircuitView import CircuitScene, CircuitView
 from UICore import *
 
 
@@ -41,7 +42,7 @@ class CompItem(QGraphicsRectItem):
 
 
 	def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value):
-		if change == QGraphicsItem.ItemPositionChange:
+		if change == QGraphicsItem.GraphicsItemChange.ItemPositionChange:
 			return QPointF(*self.scene().snapToGrid(
 				value.x(),
 				value.y()
