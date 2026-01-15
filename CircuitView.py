@@ -87,14 +87,15 @@ class CircuitView(QGraphicsView):
 
 	###======= MOUTH CONTROLS =======###
 	def mousePressEvent(self, event: QMouseEvent):
-		if event.button() == Qt.MouseButton.RightButton:
+		if event.buttons() & (Qt.MouseButton.RightButton | Qt.MouseButton.MiddleButton):
+		# if event.button() == Qt.MouseButton.MiddleButton or event.button() == Qt.MouseButton.RightButton:
 			self.lastMousePos = event.position()
 		
 		super().mousePressEvent(event)
 	
 	def mouseMoveEvent(self, event: QMouseEvent):
 		mousepos = event.position()
-		if event.buttons() & Qt.MouseButton.RightButton:
+		if event.buttons() & (Qt.MouseButton.RightButton | Qt.MouseButton.MiddleButton):
 			delta = mousepos - self.lastMousePos
 			
 			self.translate(

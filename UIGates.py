@@ -15,7 +15,7 @@ from PySide6.QtGui import (
 	QPalette, QColor, QFont, QPainter, QPen, QBrush, QPainterPath,
 	QMouseEvent, QKeyEvent,
 )
-from CircuitView import CircuitScene, CircuitView
+# from CircuitView import CircuitScene, CircuitView
 from UICore import *
 
 
@@ -33,7 +33,7 @@ class CompItem(QGraphicsRectItem):
 			QGraphicsItem.GraphicsItemFlag.ItemIsSelectable |
 			QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
 		)
-		self.redraw()
+		self.updateVisual()
 		self.setPen(QPen(Color.outline, 2))
 		self.label = QGraphicsTextItem("=1", self)
 		self.label.setFont(Font.default)
@@ -50,7 +50,7 @@ class CompItem(QGraphicsRectItem):
 
 		return super().itemChange(change, value)
 	
-	def redraw(self):
+	def updateVisual(self):
 		if self.state: self.setBrush(Color.gate_on)
 		else         : self.setBrush(Color.gate_off)
 
