@@ -40,8 +40,8 @@ class CircuitScene(QGraphicsScene):
 		self.gates: list[CompItem] = []
 		self.wires: list[WireItem] = []
 
-	def addComp(self, x: float, y:float, comp_type):
-		comp: CompItem = comp_type(*self.snapToGrid(x, y))
+	def addComp(self, x: float, y:float, comp_type: type[CompItem]):
+		comp = comp_type(*self.snapToGrid(x, y))
 		self.addItem(comp)
 		self.gates.append(comp)
 

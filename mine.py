@@ -44,10 +44,18 @@ class AppWindow(QMainWindow):
 		###======= SIDEBAR DRAG-N-DROP MENU =======###
 		self.dragbar = QVBoxLayout()
 		self.dragbar.setSpacing(10)
-		for text in ["AND", "OR", "NOT", "IN", "BULB"]:
+		gatelists = {
+			"AND": CompItem,
+			"OR": CompItem,
+			"NOT": CompItem,
+			"IN": CompItem,
+			"BULB": CompItem,
+		}
+		print(gatelists.keys())
+		for text, item in gatelists.items():
 			btn = QPushButton(text)
 			btn.setMinimumHeight(50)
-			# btn.clicked.connect(partial(self.scene.add_gate, text))
+			btn.clicked.connect(partial(self.view.scene.addComp, 0, 0, item))
 			self.dragbar.addWidget(btn)
 		self.dragbar.addStretch()
 		
