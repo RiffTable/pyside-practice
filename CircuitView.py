@@ -13,7 +13,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import (
 	QPalette, QColor, QPainter, QPen, QBrush,
-	QMouseEvent, QKeyEvent, QWheelEvent
+	QMouseEvent, QKeyEvent, QWheelEvent, QNativeGestureEvent,
 )
 from UICore import (
 	Color,
@@ -59,7 +59,6 @@ class CircuitView(QGraphicsView):
 		self.scene = CircuitScene()
 		super().__init__(self.scene)
 
-		self.ZOOMRATE = 1.25
 		self.setSceneRect(-5000, -5000, 10000, 10000)
 		self.viewport().setMouseTracking(True)
 		self.setRenderHints(
@@ -77,6 +76,7 @@ class CircuitView(QGraphicsView):
 
 		self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
 		self.setOptimizationFlag(QGraphicsView.OptimizationFlag.DontAdjustForAntialiasing)
+		self.setTransformationAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
 
 		self.lastMousePos = QPointF(0, 0)
 
@@ -109,26 +109,41 @@ class CircuitView(QGraphicsView):
 		self.lastMousePos = mousepos
 	
 	def wheelEvent(self, event: QWheelEvent):
-		minZ = -3
-		maxZ = +3
-		# 1. Capture the scene position under the mouse before zooming
-		mouse_pos = event.position()
-		scene_pos = self.mapToScene(mouse_pos.toPoint())
-		event.scenePosition()
+		self.applyZoom(
+			event.position().toPoint(),
+			1.25 if event.angleDelta().y() > 0 else 0.8
+		)
+	
+	def viewportEvent(self, event: QEvent):
+		if event.type() == QEvent.Type.NativeGesture:
+			gestEvent = cast(QNativeGestureEvent, event)
+			if gestEvent.gestureType() == Qt.NativeGestureType.ZoomNativeGesture:
+				self.applyZoom(
+					gestEvent.position().toPoint(),
+					1.0 + gestEvent.value()
+				)
+				return True
+		return super().viewportEvent(event)
+	
+	def applyZoom(self, mousePos: QPoint, factor: float):
+		minZ = 0.5
+		maxZ = 2.0
 
-		# Zoom factor
-		self.zoomlvl += +1 if event.angleDelta().y() > 0 else -1
-		self.zoomlvl = max(minZ, min(self.zoomlvl, maxZ))
 
-		# k = self.ZOOMRATE**(newZoom-self.currZoom)
-		newscale = self.ZOOMRATE**self.zoomlvl
-		k = newscale/self.viewScale
+		# Tracking data
+		curZ = self.transform().m11()
+		pos1 = self.mapToScene(mousePos)
+
+		# Calculating zoom factor
+		newZ = curZ*factor
+		newZ = max(minZ, min(newZ, maxZ))
+
+		# Applying Zoom
+		k = newZ/curZ
 		self.scale(k, k)
-		self.viewScale = newscale
-		# self.viewScale = self.transform().m11()
-
+		self.viewScale = newZ
 
 		# Make sure cursor stays on the same position in scene
-		new_scene_pos = self.mapToScene(mouse_pos.toPoint())
-		delta = new_scene_pos - scene_pos
+		pos2 = self.mapToScene(mousePos)
+		delta = pos2 - pos1
 		self.translate(delta.x(), delta.y())
