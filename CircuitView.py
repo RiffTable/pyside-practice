@@ -1,11 +1,6 @@
+from __future__ import annotations
 from typing import cast
-from PySide6.QtWidgets import (
-	QApplication, QMainWindow, QWidget,
-	QPushButton, 
-	QGraphicsScene, QGraphicsView,
-	QVBoxLayout, QHBoxLayout,
-	QGraphicsTextItem, 
-)
+from PySide6.QtWidgets import QGraphicsView
 from PySide6.QtCore import (
 	Qt, QObject,
 	QEvent, 
@@ -16,41 +11,7 @@ from PySide6.QtGui import (
 	QInputDevice,
 	QMouseEvent, QKeyEvent, QWheelEvent, QNativeGestureEvent,
 )
-from UICore import (
-	Color,
-)
-from UIGates import (
-	CompItem, WireItem
-)
-
-
-
-
-
-
-
-
-
-
-
-class CircuitScene(QGraphicsScene):
-	def __init__(self):
-		super().__init__()
-
-		self.SIZE = 20
-		self.gates: list[CompItem] = []
-		self.wires: list[WireItem] = []
-
-	def addComp(self, x: float, y:float, comp_type: type[CompItem]):
-		comp = comp_type(*self.snapToGrid(x, y))
-		self.addItem(comp)
-		self.gates.append(comp)
-
-	def snapToGrid(self, x: float, y:float) -> tuple[int, int]:
-		return (
-			round(x/self.SIZE)*self.SIZE,
-			round(y/self.SIZE)*self.SIZE
-		)
+from CircuitScene import CircuitScene
 
 
 
@@ -123,7 +84,6 @@ class CircuitView(QGraphicsView):
 			return
 
 		# Check if Mouse Wheel
-		# if abs(angleDelta.y()) > 1:
 		if dev and dev.type() == QInputDevice.DeviceType.Mouse:
 			dy = angleDelta.y()
 			if abs(dy) <= 1: return
@@ -148,7 +108,6 @@ class CircuitView(QGraphicsView):
 		minZ = 0.5
 		maxZ = 2.0
 
-
 		# Tracking data
 		curZ = self.transform().m11()
 		before = self.mapToScene(mousePos)
@@ -162,7 +121,7 @@ class CircuitView(QGraphicsView):
 		self.scale(k, k)
 		self.viewScale = newZ
 
-		# Make sure cursor stays on the same position in scene
+		# Making sure cursor stays on the same position in scene
 		after = self.mapToScene(mousePos)
 		delta = after - before
 		self.translate(delta.x(), delta.y())

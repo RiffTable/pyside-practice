@@ -12,17 +12,10 @@ from PySide6.QtCore import (
 	QEvent, 
 	QPointF, QLineF, QRectF
 )
-from PySide6.QtGui import (
-	QPalette, QColor, QPainter, QPen, QBrush,
-	QMouseEvent, QKeyEvent
-)
-from UICore import Color
-from CircuitView import (CircuitScene, CircuitView)
-from UIGates import CompItem
-
-
-
-
+from PySide6.QtGui import QPalette
+from Styles import Color
+from CircuitView import CircuitView
+from graphics.CompItem import CompItem
 
 
 

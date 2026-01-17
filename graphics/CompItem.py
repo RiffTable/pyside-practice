@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import cast
 from PySide6.QtWidgets import (
 	QApplication, QMainWindow, QWidget,
 	QPushButton, 
@@ -12,11 +13,9 @@ from PySide6.QtCore import (
 	QPointF, QLineF, QRectF
 )
 from PySide6.QtGui import (
-	QPalette, QColor, QFont, QPainter, QPen, QBrush, QPainterPath,
-	QMouseEvent, QKeyEvent,
+	QPalette, QColor, QFont, QPainter, QPen, QBrush, QPainterPath
 )
-# from CircuitView import CircuitScene, CircuitView
-from UICore import *
+from Styles import (Color, Font)
 
 
 
@@ -53,9 +52,3 @@ class CompItem(QGraphicsRectItem):
 	def updateVisual(self):
 		if self.state: self.setBrush(Color.gate_on)
 		else         : self.setBrush(Color.gate_off)
-
-
-
-class WireItem(QGraphicsPathItem):
-	def __init__(self, beg: CompItem, end: CompItem):
-		super().__init__()
