@@ -13,6 +13,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import (
 	QPalette, QColor, QPainter, QPen, QBrush,
+	QInputDevice,
 	QMouseEvent, QKeyEvent, QWheelEvent, QNativeGestureEvent,
 )
 from UICore import (
@@ -109,10 +110,28 @@ class CircuitView(QGraphicsView):
 		self.lastMousePos = mousepos
 	
 	def wheelEvent(self, event: QWheelEvent):
-		self.applyZoom(
-			event.position().toPoint(),
-			1.25 if event.angleDelta().y() > 0 else 0.8
-		)
+		pixelDelta = event.pixelDelta()
+		angleDelta = event.angleDelta()
+		dev = event.device()
+
+		# Check if Touchpad
+		if dev and dev.type() == QInputDevice.DeviceType.TouchPad:
+			self.translate(
+				pixelDelta.x()/self.viewScale,
+				pixelDelta.y()/self.viewScale
+			)
+			return
+
+		# Check if Mouse Wheel
+		# if abs(angleDelta.y()) > 1:
+		if dev and dev.type() == QInputDevice.DeviceType.Mouse:
+			dy = angleDelta.y()
+			if abs(dy) <= 1: return
+
+			self.applyZoom(
+				event.position().toPoint(),
+				1.25 if dy > 0 else 0.8
+			)
 	
 	def viewportEvent(self, event: QEvent):
 		if event.type() == QEvent.Type.NativeGesture:
@@ -132,7 +151,7 @@ class CircuitView(QGraphicsView):
 
 		# Tracking data
 		curZ = self.transform().m11()
-		pos1 = self.mapToScene(mousePos)
+		before = self.mapToScene(mousePos)
 
 		# Calculating zoom factor
 		newZ = curZ*factor
@@ -144,6 +163,6 @@ class CircuitView(QGraphicsView):
 		self.viewScale = newZ
 
 		# Make sure cursor stays on the same position in scene
-		pos2 = self.mapToScene(mousePos)
-		delta = pos2 - pos1
+		after = self.mapToScene(mousePos)
+		delta = after - before
 		self.translate(delta.x(), delta.y())
