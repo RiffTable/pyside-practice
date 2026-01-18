@@ -1,21 +1,11 @@
 import sys
 from functools import partial
-from PySide6.QtWidgets import (
-	QApplication, QMainWindow, QWidget,
-	QPushButton, 
-	QGraphicsScene, QGraphicsView,
-	QVBoxLayout, QHBoxLayout,
-	QGraphicsTextItem, 
-)
-from PySide6.QtCore import (
-	Qt, QObject,
-	QEvent, 
-	QPointF, QLineF, QRectF
-)
-from PySide6.QtGui import QPalette
-from Styles import Color
+
+from QtCore import *
+
+from styles import Color
 from CircuitView import CircuitView
-from graphics.CompItem import CompItem
+from Items import CompItem
 
 
 
@@ -44,7 +34,6 @@ class AppWindow(QMainWindow):
 			"IN": CompItem,
 			"BULB": CompItem,
 		}
-		print(gatelists.keys())
 		for text, item in gatelists.items():
 			btn = QPushButton(text)
 			btn.setMinimumHeight(50)

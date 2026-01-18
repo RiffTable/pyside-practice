@@ -1,16 +1,7 @@
 from __future__ import annotations
 from typing import cast
-from PySide6.QtWidgets import QGraphicsView
-from PySide6.QtCore import (
-	Qt, QObject,
-	QEvent, 
-	QPoint, QPointF, QLineF, QRectF,
-)
-from PySide6.QtGui import (
-	QPalette, QColor, QPainter, QPen, QBrush,
-	QInputDevice,
-	QMouseEvent, QKeyEvent, QWheelEvent, QNativeGestureEvent,
-)
+
+from QtCore import *
 from CircuitScene import CircuitScene
 
 
@@ -64,7 +55,6 @@ class CircuitView(QGraphicsView):
 				delta.x()/self.viewScale,
 				delta.y()/self.viewScale
 			)
-			# print(f"{self.transform().dx()}, {self.transform().dy()}")
 		else:
 			super().mouseMoveEvent(event)
 		

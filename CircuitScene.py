@@ -1,8 +1,9 @@
 from __future__ import annotations
 from typing import cast
-from PySide6.QtWidgets import QGraphicsScene
-from graphics.CompItem import CompItem
-from graphics.WireItem import WireItem
+
+from QtCore import *
+
+from Items import CompItem, WireItem
 
 
 

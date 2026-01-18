@@ -1,5 +1,6 @@
-from __future__ import annotations
-from typing import cast
+# Using this file to import everything I need from PySide6 so that I don't need to
+# constantly manage packages and ruin how the other project files look
+
 from PySide6.QtWidgets import (
 	QApplication, QMainWindow, QWidget,
 	QPushButton, 
@@ -10,15 +11,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import (
 	Qt, QObject,
 	QEvent, 
-	QPointF, QLineF, QRectF
+	QPoint, QPointF, QLineF, QRectF,
 )
 from PySide6.QtGui import (
 	QPalette, QColor, QFont, QPainter, QPen, QBrush, QPainterPath,
-	QMouseEvent, QKeyEvent,
+	QInputDevice,
+	QMouseEvent, QKeyEvent, QWheelEvent, QNativeGestureEvent,
 )
-# from CircuitView import CircuitScene, CircuitView
-from CompItem import CompItem
-
-class WireItem(QGraphicsPathItem):
-	def __init__(self, beg: CompItem, end: CompItem):
-		super().__init__()
